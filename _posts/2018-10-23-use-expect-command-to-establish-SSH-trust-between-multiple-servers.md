@@ -1,4 +1,9 @@
-## 使用expect自动化完成集群SSH信任关系的建立
+---
+layout: post
+title: 使用expect自动化完成集群SSH信任关系的建立
+categories: [Linux]
+tags:学习x
+---
 
 1. 将以下脚本存成文件，并修改其权限
 ```bash
