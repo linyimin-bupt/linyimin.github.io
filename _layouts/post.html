@@ -20,10 +20,12 @@ layout: default
   	<i class="fa fa-calendar"></i>
   	{{ page.date | date: "%Y" }}年{{ page.date | date: "%m" }}月{{ page.date | date: "%d" }}日
   	<i class="space"></i>
+  	<i class="space"></i>
   	<i class="fa fa-tag">
       <a class="tag" href="{{ site.url }}/blog/categories.html#{{ page.categories }}">
         {% for category in page.categories %}
             <span>{{ category }}</span>
+            <i class="space"></i>
             <i class="space"></i>
         {% endfor %}
       </a>
