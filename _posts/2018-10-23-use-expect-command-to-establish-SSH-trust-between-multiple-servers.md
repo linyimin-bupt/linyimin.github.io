@@ -19,7 +19,8 @@ linyimin@:capra(master)$ cat servers.txt
 $./establish-ssh.sh
 ```
 **脚本文件**
-```bash
+
+```shell
 #!/bin/bash
 # The name who want to ssh without password
 USER_UID=linyimin
@@ -85,5 +86,6 @@ done
 ```
 
 **存在问题**
+
 在使用的时候发现IP对应的主机不存在的时候，打印的还是`------------- $SSH_IP is ok. -----------------------`，
 也就是expect命令执行完成之后`$?`始终是0
