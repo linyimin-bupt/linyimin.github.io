@@ -21,7 +21,13 @@ layout: default
   	{{ page.date | date: "%Y" }}年{{ page.date | date: "%m" }}月{{ page.date | date: "%d" }}日
   	<i class="space"></i>
   	<i class="fa fa-archive"></i>
-  	<a class="tag" href="{{ site.url }}/blog/categories.html#{{ page.categories }}">{{ page.categories }}</a>
+    <a class="tag" href="{{ site.url }}/blog/categories.html#{{ page.categories }}">
+      <i class="fa fa-tags"></i>
+      {% for category in page.categories %}
+          <span>{{ category }}</span>
+          <i class="space"></i>
+      {% endfor %}
+    </a>
   	<i class="space"></i>
   	<i class="fa fa-tags"></i>
   	{% for tag in page.tags %}
