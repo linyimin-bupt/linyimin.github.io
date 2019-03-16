@@ -1,0 +1,52 @@
+---
+layout: default
+category: about-zh
+language: cn
+title: 林贻民的个人主页
+description: 这是我的个人主页，目前北京邮电大学计算机学院硕士在读。2017年7月完成本科学业，获得北京邮电大学信息工程专业学士学位。希望结识更多同道中人。
+---
+
+<section class="about-me inner">
+  <h1>
+    <div class="book-me">
+      <!--<a class="btn btn-lg" href="/contact">联系我</a>-->
+      <a class="btn btn-lg" href="/">英文</a>
+    </div>
+    <span class="hello">专注与微笑</span>
+  </h1>
+
+  <blockquote>
+  <p>
+      破山中贼易，破心中贼难
+  </p>
+  </blockquote>
+  <p>
+    这是<a href="/"><span itemprop="name">林贻民</span></a>的个人主页，目前北京邮电大学计算机学院硕士在读。2017年7月完成本科学业，获得北京邮电大学信息工程专业学士学位。希望结识更多同道中人。
+  </p>
+  <p>
+    研究兴趣集中于<strong>大数据</strong>、<strong>数据服务</strong>、<strong>分布式</strong>和<strong>Web开发</strong>。
+  </p>
+  <p>
+    喜欢写代码(<a href="https://github.com/linyimin-bupt">@linyimin-bupt<i class="icon-github"></i></a>)，正在尝试阅读使用过的经典框架源码。闲暇之余，喜欢跑步和阅读，偶尔写些<a href="http://linyimin.club/blog/">文字</a>。
+  </p>
+</section>
+
+<section class="inner">
+<div class="post-recents-in-index">
+<strong>最近写作</strong>
+</div>
+<blockquote>
+<ul>
+    {% for post in site.posts limit:3 %}
+    <li class="post-list-in-index">
+    <small class="post-list-date-in-index">{{ post.date | date_to_string }}</small><a  href="{{ site.url }}{{ post.url }}" title="{{ post.title }}">{{ post.title }}</a>
+    </li>
+    {% endfor %}
+</ul>
+</blockquote>
+  <p>
+    更多请查看我的<a href="{{ site.url }}/"><strong>简历</strong></a>。
+  </p>
+</section>
+
+<!--<a href="https://github.com/willard-yuan/willard-yuan.github.io"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>-->
