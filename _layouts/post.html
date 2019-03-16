@@ -22,18 +22,13 @@ layout: default
   	<i class="space"></i>
   	<i class="fa fa-archive"></i>
     <a class="tag" href="{{ site.url }}/blog/categories.html#{{ page.categories }}">
-      <i class="icon-bookmarks"></i>
+      <i class="fa fa-tags"></i>
+      <span>tag: </span>
       {% for category in page.categories %}
           <span>{{ category }}</span>
           <i class="space"></i>
       {% endfor %}
     </a>
-  	<i class="space"></i>
-  	<i class="fa fa-tags"></i>
-  	{% for tag in page.tags %}
-  	    <a class="tag" href="{{ site.url }}/tag/#{{ tag }}">{{ tag }}</a>
-  	    <i class="space"></i>
-  	{% endfor %}
   	<i class="space"></i> 字数:{{page.content | size |divided_by:2}}
   </ul>
 </div>
