@@ -207,7 +207,7 @@ blockquote {
   font-style: italic;
 }
 
-@media(max-width: 400px) {
+@media(max-width: 350px) {
   .header-container .contact {
     display: none;
   }
