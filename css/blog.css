@@ -103,8 +103,17 @@ ul{margin:0;padding:0}
 ul.posts {
 }
 
-.inner, pre code, .post > * {
+.inner, pre code > * {
   max-width: 760px; /*680*/
+  margin-left: auto;
+  margin-right: auto;
+  text-align: left;
+  width: 100%;
+  display: block;
+}
+
+.post > * {
+  max-width: 1000px; /*680*/
   margin-left: auto;
   margin-right: auto;
   text-align: left;
