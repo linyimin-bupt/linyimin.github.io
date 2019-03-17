@@ -88,7 +88,7 @@ ul{margin:0;padding:0}
     box-shadow: 0 1px 10px rgba(0,0,0,0.33333);**/
     position:relative;
     width:96%;
-    max-width:1000px;
+    max-width:860px;
     margin:0 auto;
  }
 
@@ -103,17 +103,8 @@ ul{margin:0;padding:0}
 ul.posts {
 }
 
-.inner, pre code > * {
+.inner, pre code, .post > * {
   max-width: 760px; /*680*/
-  margin-left: auto;
-  margin-right: auto;
-  text-align: left;
-  width: 100%;
-  display: block;
-}
-
-.post > * {
-  max-width: 1000px; /*680*/
   margin-left: auto;
   margin-right: auto;
   text-align: left;
@@ -126,7 +117,7 @@ ul.posts {
 }
 
 .post > .highlight {
-  max-width: 100% !important;
+  /*max-width: 100% !important;  代码块区域宽度*/
   word-wrap: break-word;
 }
 

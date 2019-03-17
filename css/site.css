@@ -207,7 +207,7 @@ blockquote {
   font-style: italic;
 }
 
-@media(max-width: 350px) {
+@media(max-width: 400px) {
   .header-container .contact {
     display: none;
   }
@@ -231,17 +231,8 @@ header .logo a, header .logo a:hover {
   display: inline-block;
 }
 
-.inner, pre code > * {
+.inner, pre code, .post > * {
   max-width: 760px; /*680*/
-  margin-left: auto;
-  margin-right: auto;
-  text-align: left;
-  width: 100%;
-  display: block;
-}
-
-.post > * {
-  max-width: 1000px; /*680*/
   margin-left: auto;
   margin-right: auto;
   text-align: left;
@@ -254,7 +245,7 @@ header .logo a, header .logo a:hover {
 }
 
 .post > .highlight {
-  max-width: 100% !important;
+  /*max-width: 100% !important;  代码块区域宽度*/
   word-wrap: break-word;
 }
 
