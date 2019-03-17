@@ -232,7 +232,7 @@ header .logo a, header .logo a:hover {
 }
 
 .inner, pre code, .post > * {
-  max-width: 760px; /*680*/
+  max-width: 1000px; /*680*/
   margin-left: auto;
   margin-right: auto;
   text-align: left;
@@ -368,7 +368,7 @@ footer p {
 }
 
 footer .linkings {
-  max-width: 760px;
+  max-width: 1000px;
   margin-left: auto;
   margin-right: auto;
   text-align: left;
