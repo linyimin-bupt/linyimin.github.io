@@ -232,7 +232,7 @@ header .logo a, header .logo a:hover {
 }
 
 .inner, pre code, .post > * {
-  max-width: 1000px; /*680*/
+  max-width: 760px; /*680*/
   margin-left: auto;
   margin-right: auto;
   text-align: left;
@@ -245,7 +245,7 @@ header .logo a, header .logo a:hover {
 }
 
 .post > .highlight {
-  /*max-width: 100% !important;  代码块区域宽度*/
+  max-width: 100% !important;
   word-wrap: break-word;
 }
 
