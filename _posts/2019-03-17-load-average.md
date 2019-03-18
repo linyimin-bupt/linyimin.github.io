@@ -39,7 +39,7 @@ uptime
 ```
 
 
-![](./images/uptime.png)
+![](http://blog.linyimin.club/images/posts/uptime.png)
 
 
 可以看到，过去1、5、15分钟，本系统的负载分别是1.05，1.27和1.31， 充分利用好这三个值，可以让我们更全面、更立体的理解目前系统的负载状态。
@@ -66,7 +66,7 @@ Linux系统上的/proc文件目录是一种文件系统，及proc文件系统。
 cat /proc/cpuinfo
 ```
 
-![](./images/cpuinfo.png)
+![cpu information](http://blog.linyimin.club/images/posts/cpuinfo.png)
 
 相关字段说明
 
