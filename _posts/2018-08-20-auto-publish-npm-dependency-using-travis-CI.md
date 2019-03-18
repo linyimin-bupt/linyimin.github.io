@@ -4,6 +4,8 @@ title: 使用travis CI自动发布npm包
 categories: [node, CI]
 ---
 
+> 破山中贼易，破心中贼难
+
 1. 初始化项目时指定程序入口和相关变异命令
 
    ```json

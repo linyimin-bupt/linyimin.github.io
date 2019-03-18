@@ -5,6 +5,8 @@ categories: [Linux]
 tags: 学习
 ---
 
+> 破山中贼易，破心中贼难
+
 1. 查看虚拟机Linux是否安装ssh
 
 ```bash

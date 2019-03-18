@@ -5,6 +5,8 @@ categories: [Linux]
 tags: 学习
 ---
 
+> 破山中贼易，破心中贼难
+
 1. 将以下脚本存成文件，并修改其权限
 ```bash
 $ chmod 775 establish-ssh.sh
