@@ -41,7 +41,7 @@ uptime
 ```
 
 
-![](http://blog.linyimin.club/images/posts/uptime.png)
+![系统平均负载](http://blog.linyimin.club/images/posts/uptime.png)
 
 
 可以看到，过去1、5、15分钟，本系统的负载分别是1.05，1.27和1.31， 充分利用好这三个值，可以让我们更全面、更立体的理解目前系统的负载状态。
@@ -98,3 +98,185 @@ cat /proc/cpuinfo | grep 'processor' | wc -l
 - 对于大量处于等待CPU的进程， 平均负载会升高，而由于进程的调度也会使用CPU，所以CPU使用率也会升高。
 
 ## 平均负载案例分析
+
+在进行案例分析之前，先介绍三个常用的工具
+
+### 常用工具
+
+- stress
+
+> Impose certain types of compute stress on your system
+
+`stress` 是一个系统压力测试工具，在这里用作异常进程模拟平均进程升高的场景。
+
+|参数选项|解释说明|
+|:---|:---|
+|--timeout N|timeout after N seconds|
+|--cpu N|spawn N workers spining on sqrt()|
+|--io N|spawn N workers spining on sync()|
+|--vm N|spawn N workers spining on malloc()/free()|
+
+- mpstat
+
+`mpstat` 是一个常用的多核CPU性能分析工具，用来实时查看每个CPU的性能指标及平均指标
+
+> Report processors related statistics.
+
+|参数选项|解释说明|
+|:---|:---|
+|-I|Report interrupts statistics|
+|-P ALL|Report all processors statistics|
+|-u|Report CPU utilization|
+|N|Diaplay reports at N seconds internal|
+|M|Diaplay M reports at N seconds internal, if M is 0 or omiting, will report continuously.|
+
+**字段说明**
+
+- %usr: 用户空间使用CPU的时间占比
+- %nice: 优先级为nice的进程使用CPU时间占比
+- %sys: 系统内核使用CPU时间占比
+- %iowait: 系统处于IO时，CPU空闲时间占比
+- %irq: 处理硬件中断的CPU时间占比
+- %soft: 处理软中断的CPU时间占比
+- %idle: 没有IO时，CPU空闲时间占比
+
+  
+- pidstat
+
+`pidstat` 是一个常用的进程性能分析工具，用来实时查看进程的CPU、内存、I/O及上下文 切换等指标。
+
+> Report statistics for Linux tasks.
+
+|参数选项|解释说明|
+|:---|:---|
+|-d|Report I/O statistics|
+|-l|Display the process command name and all its arguments|
+|-p pid|Select process for which statistics is to be reported|
+|-r|Report page faults and memory utilization|
+|-s|Report stack utilization|
+|-t|Display statistics for threads associated with selected tasks|
+|-v|Display number of threads and file descriptors associated with current task|
+|-w|Report task swiching activity|
+
+
+**字段说明**
+
+- KB_rd/s: Number of kilobytes the task has caused to be read from disk per second.
+- KB_wr/s: Number of kilobytes the task has caused, or shall cause to be written to disk per second.
+- minflt/s: Total number of minor faults the task has made per  second, those which have not required loading a memory page from disk.
+- majfflt/s: Total number of major faults the task has made  per second, those which have required a memory page from disk.
+- VSZ: Virtual Size
+- RSS: Resident  Set Size
+- threads: Number of threads associated with current task.
+- fd-nr: Number of file descriptors associated with current task.
+- cswch/s: Total number of voluntary context switches the task made per second.  A voluntary context switch occurs when a task blocks because it requires a resource that is unavailable.
+- nvcswch/s: otal number of non voluntary context switches the task made per second.  A involuntary context switch takes place when a task executes for the duration of its time slice and then is forced to relinquish the processor.
+
+### 使用stress模拟相关场景
+
+1. CPU密集型进程
+
+> 模拟一个CPU使用率100%的场景，时间为5分钟
+
+```shell
+$ stress --cpu 1 --timeout 600
+```
+
+使用`watch -d uptime` 查看系统的负载
+
+![系统负载](http://blog.linyimin.club/images/posts/stress-cpu-1-uptime.png)
+
+**可以发现平均负载是在逐步下降的，最后会趋于稳定，如果不在运行其他程序**
+
+使用`mpstat -P ALL 5` 查看CPU使用率(每隔5秒输出一次)
+
+![CPU使用率](http://blog.linyimin.club/images/posts/stress-cpu-1-utilization.png)
+
+可以发现CPU 2的使用率接近100%，而iowait为0%，说明平均负载的升高是由于CPU密集型进程引起的。
+
+**注意**： 上面的截图呈现平均负载逐渐下降的原因是之前启动了大量的进程，关闭之后直接运行的`stress`，如果之前系统没有运行其他进程的话，就会看到平均负载是逐渐升高的。
+
+2. IO密集型进程
+
+> 模拟IO，即不断的执行sync()
+
+```shell
+$ stress --io 1 --timeout 600
+```
+
+使用`watch -d uptime`查看系统的平均负载
+
+- 运行前的系统平均负载
+
+![运行前系统平均负载](http://blog.linyimin.club/images/posts/stress-io-1-before-uptime.png)
+
+- 运行后的平均负载
+
+![运行后系统平均负载](http://blog.linyimin.club/images/posts/stress-io-1-after-uptime.png)
+
+使用`mpstat -P ALL 5`查看CPU情况
+
+![CPU使用情况](http://blog.linyimin.club/images/posts/stress-io-1-cpuinfo.png)
+
+**可以发现， 系统的平均负载生高了，其中的一个CPU的系统使用率达到了30%， 而iowait有62%， 说明IO密集型进程也有可能使平均负载升高**
+
+> 产生64个进程进行sync(IO)操作
+
+```shell
+$ stress --io 64 --timeout 600
+```
+
+使用`mpstat -P ALL 5`查看CPU使用情况
+
+![密集型IO进程CPU使用情况](http://blog.linyimin.club/images/posts/stress-io-64-cpuinfo.png)
+
+与前面相比， 每个CPU的系统使用率升高了，iowait却只保持在2,30%, 在使用`pidstat -d -C stress`查看磁盘IO的具体情况：
+
+![磁盘IO的具体情况](http://blog.linyimin.club/images/posts/stress-io-64-pidio.png)
+
+发现根本就没有想磁盘中写入任何数据，可能是缓冲区没有任何数据，无法产生大的IO压力，CPU都被大量的系统调用消耗了。
+
+> 使用`stress --hdd 64 --timeout 600`模拟大量的IO进程（hdd表示将使用write()函数将临时文件写入磁盘）
+
+使用`mpstat -P ALL 5`查看CPU使用情况
+
+![密集型IO进程CPU使用情况](http://blog.linyimin.club/images/posts/stress-hdd-64-cpuinfo.png)
+
+与前面的sync相比， iowait提高到了70%多, 在使用`pidstat -d -C stress`查看磁盘IO的具体情况：
+
+![磁盘IO的具体情况](http://blog.linyimin.club/images/posts/stress-hdd-64-pidio.png)
+
+发现根本进程有向磁盘中写入数据，产生了大的IO压力，CPU大部分被等待IO消耗，但也有一部分由系统调用消耗。
+
+
+
+1. 大量进程场景
+
+> 模拟64个进程
+
+```shell
+$ stress --cpu 64 --timeout 600
+```
+
+使用`watch -d uptime` 查看系统的负载
+
+![系统负载](http://blog.linyimin.club/images/posts/stress-cpu-64-uptime.png)
+
+**可以发现平均负载是在逐步下降的，最后会趋于稳定，如果不在运行其他程序**
+
+使用`mpstat -P ALL 5` 查看CPU使用率(每隔5秒输出一次)
+
+![CPU使用率](http://blog.linyimin.club/images/posts/stress-cpu-64-utilization.png)
+
+可以发现所有CPU的使用率接近100%，而iowait为0%，说明平均负载的升高是由于CPU密集型进程引起的。
+
+## 总结
+
+平均负载提供了一个快速查看系统整体性能的手段反映了整体的负载情况，但是并不能直接发现哪里出现了性能瓶颈。因为平均负载高有可能是一下原因引起的：
+
+- CPU密集型进程导致的
+- I/O密集型导致的
+
+所以，当发现负载高时，可以使用mpstat和pidstat工具来辅助分析负载的来源。
+
+[我的手写笔记](http://blog.linyimin.club/notes/linux-performance-optimization/平均负载.pdf)
