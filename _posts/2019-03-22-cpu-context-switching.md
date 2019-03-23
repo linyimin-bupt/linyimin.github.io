@@ -100,6 +100,8 @@ Linux是一个多任务操作系统，它支持远大于逻辑CPU数量的任务
 2. 过多的CPU上下文切换，会把大量的CPU时间消耗寄存器、内核栈及虚拟内存数据的保存和恢复上，而进程真正运行时间大大减少，会导致系统的整体性能大幅下降。
 
 
+## 参考
 
-
-极客时间版权所有: https://time.geekbang.org/column/article/69859
+[极客时间: Linux性能优化实践](https://time.geekbang.org/column/article/69859)
+[Linux内核空间与用户空间](https://www.cnblogs.com/sparkdev/p/8410350.html)
+[Linux内核中的中断栈与内核栈的补充说明](https://blog.csdn.net/hovan/article/details/51996603)
