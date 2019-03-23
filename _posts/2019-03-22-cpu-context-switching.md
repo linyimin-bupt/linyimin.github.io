@@ -99,6 +99,155 @@ Linux是一个多任务操作系统，它支持远大于逻辑CPU数量的任务
 1. CPU上下文切换是保证Linux系统正常工作的核心功能之一，但是用户需要特别关注；
 2. 过多的CPU上下文切换，会把大量的CPU时间消耗寄存器、内核栈及虚拟内存数据的保存和恢复上，而进程真正运行时间大大减少，会导致系统的整体性能大幅下降。
 
+## 实际案例分析
+
+### 查看系统的上下文切换情况
+
+**使用`vmstat`命令查看**
+
+> Report virtual memory statistics
+
+```shell
+$ vmstat 5 3 # 5秒显示一次，一共显示3次
+```
+
+重要字段说明：
+
+- r: The number of runnable processes(running or waiting for run time)
+- b: The number of processes in uninterruptible sleep
+- in: The number of interrupts per second, including the clock
+- cs: The number of context switches per second.
+
+![vmstat查看系统上下文切换情况](http://blog.linyimin.club/images/posts/vmstat.png)
+
+由执行结果可以知道，最后上下文切换次数是1825次，中断次数为734次，就绪队列长度和不可中断进程数均为0
+
+### 查看指定进程的上下文切换情况
+
+**使用`pidstat`命令查看**
+
+```shell
+$ pidstat -p PID -w
+```
+
+相关字段说明
+
+- cswch/s: 每秒自愿上下文切换次数
+- nvcswch/s: 每秒非自愿上下文切换次数
+
+自愿上下文切换: **进程无法获取所需的系统资源，导致的上下文切换**。比如说， I/O、内存等系统资源不足时，就会发生自愿上下文切换。
+非自愿上下文切换: **进程由于时间片已到或者其他原因，被系统强制调度，进而发生的上下文切换** 。比如说大量进程都在争抢CPU时，就容易发生非自愿上下文却换。
+
+![查看指定进程的上下文切换情况](http://blog.linyimin.club/images/posts/pid-process-cs.png)
+
+由执行结果我们可以知道，PID为5785的进程，自愿上下文切换为0.6次每秒，没有发生非自愿上下文切换
+
+<font ccolor="#dd0000">注意，上面是针对进程的，如果想查看线程级别的上下文切换次数，需要添加上`-t`选项</font>
+
+```shell
+$ pidstat -wt -p 5785
+```
+
+![查看指定进程内线程上下文切换](http://blog.linyimin.club/images/posts/pidstat-thread-cs.png)
+
+从执行结果中，我们可以看到，PID为5785的进程中，多线程之间的上下文切换情况
+
+### 实际例子
+
+下面使用`sysbench`来模拟系统多线程调度情况
+
+```shell
+# 以10个线程运行5分钟的基准测试，模拟多线程切换问题
+$ sysbench --threads=10 --max-time=300 --max-requests=10000000 --test=threads run
+```
+
+首先，先查看空闲状态下，系统的上下文切换情况
+
+```shell
+$ vmstat 5 3
+```
+
+![空闲状态下，系统的上下文切换情况](http://blog.linyimin.club/images/posts/vmstat-start.png)
+
+由运行结果可知，此时系统上下文切换次数为1454次，中断611次
+
+然后使用`sysbench`模拟多线程切换情景
+
+```shell
+$ sysbench --threads=10 --max-time=300 --max-requests=10000000 --test=threads run
+```
+
+![系统的上下文切换](http://blog.linyimin.club/images/posts/sysbench-vmstat-cs.png)
+
+可以发现上下文切换从之前的1454次变成了1442055次，而中断的次数也变成了5824次，同时观察其他指标：
+
+- r:就绪序列变成了7，所以肯定会存在很多CPU竞争
+- us(user)和sy(system)列: 这两列的CPU使用率达80%多快到90%，其中系统的使用率(sy)高达80%左右，可以知道CPU主要被内核占用
+- in: 中断次数页达到了5824次，说明中断处理也有可能是一个潜在的问题
+
+综合这几个系统指标，我们可以知道，系统的就绪队列过长，也就是正在运行和等待CPU的进程数过多，导致了大量的上下文切换，大量的上下文切换导致系统CPU使用率过高。
+
+发现上下文切换次数过多，造成CPU系统使用过高，是造成系统性能问题的主要原因，接下来我们需要确定，是哪些进程造成上下文切换过多的。首先我们使用`pidstat`查看进程间的上下文切换信息
+
+```shell
+$ pidstat -w | sort -r -n -k 4 # 对输出信息按照自愿交换列值大小逆序排序
+```
+![进程间的上下文交换次数](http://blog.linyimin.club/images/posts/sysbench-process-cs.png)
+
+可以发现，进程间的交换次数合起来远远小于1442055，所以这么多的上下文交换应该是来自同一进程间多线程的上下文交换。为了确定是哪一个进程，我们先使用`top`命令查看具体是哪些进程占用CPU使用率高
+
+```shell
+$ top
+```
+
+![进程的CPU使用率](http://blog.linyimin.club/images/posts/top-cpu-utilization.png)
+
+可以发现CPU使用率最高的进程是sysbench,其PID为10738
+
+然后我们使用`pidstat`命令查看线程间的上下文交换次数。
+
+
+
+```shell
+$ pidstat -wt -p 10738 5
+```
+
+![线程间的上下文交换次数](http://blog.linyimin.club/images/posts/sysbench-threads-cs.png)
+
+可以知道，我们已经找到了上线文切换次数增大的根源。
+
+除了上下文交换次数升高之后，前面我们还发现中断次数大大升高了，这也有可能是影响系统性能的一部分原因，所以接下来我们继续分析：
+
+我们都知道，中断是发生在内核中的，使用`pidstat`命令只能查看进程的相关信息，并不能提供任何中断相关的详细信息。在上一篇博客[平均负载](http://blog.linyimin.club/blog/load-average.html)中我们提到过/proc这个伪文件系统，它为进程和内核提供了一种文件方式的通信接口，所以我们可以通过读取/proc文件夹下的相关文件来获取中断信息。
+
+中断信息存储在`/proc/interrupts`文件中，所以使用一下命令读取
+
+```shell
+$ cat /proc/interrupts
+```
+
+```
+SPU:          0          0          0          0   Spurious interrupts
+PMI:        422        423        422        420   Performance monitoring interrupts
+IWI:          1         26          0          1   IRQ work interrupts
+RTR:          0          0          0          0   APIC ICR read retries
+RES:    2686826    2709640    2737088    2719230   Rescheduling interrupts
+CAL:     238821     211299     210075     214742   Function call interrupts
+TLB:     210009     208988     207839     212447   TLB shootdowns
+```
+
+可以发现，变化最明显的是RES，根据RES注解可以知道，这是**重调度中断**(Rescheduling interrupts),所以中断次数升高的原因还是还因为过多的任务调度。
+
+
+### 每秒交换多少次合适
+
+这个数值取决于系统本身的CPU性能。当上下文交换次数出现指数式增长时，很有可能出现了性能问题，这是需要根据上下文交换的类型进行具体的分析：
+
+- 自愿上下文交换增多： 说明进程都在等待资源，或者发生IO问题
+- 非自愿上下文交换增多： 说明进程在强制调度，也就是进程数远远大于CPU逻辑核数，有大量进程在争抢CPU资源
+- 中断次数增多： 说明CPU正在被中断处理占用，需要查看`/proc/interrupts`文件来具体分析具体的中断类型。
+
+
 
 ## 参考链接
 
