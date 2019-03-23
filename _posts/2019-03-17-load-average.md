@@ -280,3 +280,7 @@ $ stress --cpu 64 --timeout 600
 所以，当发现负载高时，可以使用mpstat和pidstat工具来辅助分析负载的来源。
 
 [我的手写笔记](http://blog.linyimin.club/notes/linux-performance-optimization/平均负载.pdf)
+
+## 参考链接
+
+[Linux性能优化实战-基础篇：到底应该怎么理解“平均负载”？](https://time.geekbang.org/column/article/69618)
