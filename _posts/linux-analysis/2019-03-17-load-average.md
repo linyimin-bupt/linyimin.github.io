@@ -41,7 +41,7 @@ uptime
 ```
 
 
-![系统平均负载](http://blog.linyimin.club/images/posts/uptime.png)
+![系统平均负载](http://blog.linyimin.club/images/posts/linux-analysis/uptime.png)
 
 
 可以看到，过去1、5、15分钟，本系统的负载分别是1.05，1.27和1.31， 充分利用好这三个值，可以让我们更全面、更立体的理解目前系统的负载状态。
@@ -68,7 +68,7 @@ Linux系统上的/proc文件目录是一种文件系统，及proc文件系统。
 cat /proc/cpuinfo
 ```
 
-![cpu information](http://blog.linyimin.club/images/posts/cpuinfo.png)
+![cpu information](http://blog.linyimin.club/images/posts/linux-analysis/cpuinfo.png)
 
 相关字段说明
 
@@ -184,13 +184,13 @@ $ stress --cpu 1 --timeout 600
 
 使用`watch -d uptime` 查看系统的负载
 
-![系统负载](http://blog.linyimin.club/images/posts/stress-cpu-1-uptime.png)
+![系统负载](http://blog.linyimin.club/images/posts/linux-analysis/stress-cpu-1-uptime.png)
 
 **可以发现平均负载是在逐步下降的，最后会趋于稳定，如果不在运行其他程序**
 
 使用`mpstat -P ALL 5` 查看CPU使用率(每隔5秒输出一次)
 
-![CPU使用率](http://blog.linyimin.club/images/posts/stress-cpu-1-utilization.png)
+![CPU使用率](http://blog.linyimin.club/images/posts/linux-analysis/stress-cpu-1-utilization.png)
 
 可以发现CPU 2的使用率接近100%，而iowait为0%，说明平均负载的升高是由于CPU密集型进程引起的。
 
@@ -208,15 +208,15 @@ $ stress --io 1 --timeout 600
 
 - 运行前的系统平均负载
 
-![运行前系统平均负载](http://blog.linyimin.club/images/posts/stress-io-1-before-uptime.png)
+![运行前系统平均负载](http://blog.linyimin.club/images/posts/linux-analysis/stress-io-1-before-uptime.png)
 
 - 运行后的平均负载
 
-![运行后系统平均负载](http://blog.linyimin.club/images/posts/stress-io-1-after-uptime.png)
+![运行后系统平均负载](http://blog.linyimin.club/images/posts/linux-analysis/stress-io-1-after-uptime.png)
 
 使用`mpstat -P ALL 5`查看CPU情况
 
-![CPU使用情况](http://blog.linyimin.club/images/posts/stress-io-1-cpuinfo.png)
+![CPU使用情况](http://blog.linyimin.club/images/posts/linux-analysis/stress-io-1-cpuinfo.png)
 
 **可以发现， 系统的平均负载生高了，其中的一个CPU的系统使用率达到了30%， 而iowait有62%， 说明IO密集型进程也有可能使平均负载升高**
 
@@ -228,11 +228,11 @@ $ stress --io 64 --timeout 600
 
 使用`mpstat -P ALL 5`查看CPU使用情况
 
-![密集型IO进程CPU使用情况](http://blog.linyimin.club/images/posts/stress-io-64-cpuinfo.png)
+![密集型IO进程CPU使用情况](http://blog.linyimin.club/images/posts/linux-analysis/stress-io-64-cpuinfo.png)
 
 与前面相比， 每个CPU的系统使用率升高了，iowait却只保持在2,30%, 在使用`pidstat -d -C stress`查看磁盘IO的具体情况：
 
-![磁盘IO的具体情况](http://blog.linyimin.club/images/posts/stress-io-64-pidio.png)
+![磁盘IO的具体情况](http://blog.linyimin.club/images/posts/linux-analysis/stress-io-64-pidio.png)
 
 发现根本就没有想磁盘中写入任何数据，可能是缓冲区没有任何数据，无法产生大的IO压力，CPU都被大量的系统调用消耗了。
 
@@ -240,11 +240,11 @@ $ stress --io 64 --timeout 600
 
 使用`mpstat -P ALL 5`查看CPU使用情况
 
-![密集型IO进程CPU使用情况](http://blog.linyimin.club/images/posts/stress-hdd-64-cpuinfo.png)
+![密集型IO进程CPU使用情况](http://blog.linyimin.club/images/posts/linux-analysis/stress-hdd-64-cpuinfo.png)
 
 与前面的sync相比， iowait提高到了70%多, 在使用`pidstat -d -C stress`查看磁盘IO的具体情况：
 
-![磁盘IO的具体情况](http://blog.linyimin.club/images/posts/stress-hdd-64-pidio.png)
+![磁盘IO的具体情况](http://blog.linyimin.club/images/posts/linux-analysis/stress-hdd-64-pidio.png)
 
 发现根本进程有向磁盘中写入数据，产生了大的IO压力，CPU大部分被等待IO消耗，但也有一部分由系统调用消耗。
 
@@ -260,13 +260,13 @@ $ stress --cpu 64 --timeout 600
 
 使用`watch -d uptime` 查看系统的负载
 
-![系统负载](http://blog.linyimin.club/images/posts/stress-cpu-64-uptime.png)
+![系统负载](http://blog.linyimin.club/images/posts/linux-analysis/stress-cpu-64-uptime.png)
 
 **可以发现平均负载是在逐步下降的，最后会趋于稳定，如果不在运行其他程序**
 
 使用`mpstat -P ALL 5` 查看CPU使用率(每隔5秒输出一次)
 
-![CPU使用率](http://blog.linyimin.club/images/posts/stress-cpu-64-utilization.png)
+![CPU使用率](http://blog.linyimin.club/images/posts/linux-analysis/stress-cpu-64-utilization.png)
 
 可以发现所有CPU的使用率接近100%，而iowait为0%，说明平均负载的升高是由于CPU密集型进程引起的。
 
