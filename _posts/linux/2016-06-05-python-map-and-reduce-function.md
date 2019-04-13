@@ -4,8 +4,6 @@ title: 使用Python下的map和reducce函数
 categories: [Linux]
 ---
 
-> 破山中贼易,破心中贼难
-> 
 > 管它什么真理无穷,进一寸有一寸的欢喜
 
 <!-- TOC -->
