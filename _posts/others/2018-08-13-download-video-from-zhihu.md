@@ -1,7 +1,7 @@
 ---
 layout: post
-title: 使用travis CI自动发布npm包
-categories: [node, CI]
+title: 下载知乎视频并在线播放
+categories: [Other]
 ---
 
 > 管他什么真理无穷，进一寸有一寸的欢喜
