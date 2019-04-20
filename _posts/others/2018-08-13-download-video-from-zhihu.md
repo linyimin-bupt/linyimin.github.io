@@ -23,14 +23,14 @@ categories: [Other]
   - [html自动加载视频](#html自动加载视频)
   - [axios下载视频](#axios下载视频)
     - [后台实现](#后台实现-1)
-    - [前端实现](#前端实现)
+  - [前端实现](#前端实现)
 
 <!-- /TOC -->
 
-# 下载知乎视频并在线播放
+## 下载知乎视频并在线播放
 [项目地址](https://github.com/linyimin-bupt/download-video-from-zhihu.git)
 
-## 下载知乎视频
+### 下载知乎视频
 
  知乎的视频使用HLS实时流传输协议进行传输.HLS，Http Live Streaming 是由Apple公司定义的用于实时流传输的协议，HLS基于HTTP协议实现，传输内容包括两部分，一是M3U8描述文件，二是TS媒体文件。
 
@@ -63,7 +63,7 @@ categories: [Other]
 
 ​    ts文件为传输流文件，视频编码主要格式h264/mpeg4，音频为acc/MP3。
 
-### 获取答案中的视频链接
+#### 获取答案中的视频链接
 
 知乎视频链接的格式`https://www.zhihu.com/video/984740889473818624`
 
@@ -89,7 +89,7 @@ categories: [Other]
    const videoHash = matchResult[2]
    ```
 
-### 下载视频链接中对应的m3u8和ts文件
+#### 下载视频链接中对应的m3u8和ts文件
 
 ​	访问获取到的视频链接https://www.zhihu.com/video/984740889473818624, 使用F12查看具体的访问过程,可以发现,知乎对此视频链接的处理如下:
 
@@ -150,7 +150,7 @@ categories: [Other]
       
       至此,所有的ts相关的文件都会保存在`./{http-host}/{filename}`
 
-### 将所有的ts 文件合并成一个大的ts文件
+#### 将所有的ts 文件合并成一个大的ts文件
 
 ts文件是以二进制的格式进行存储, 可以以二进制合并的方式直接将所有小的ts文件合并成一个大的ts文件,在linux系统下可以使用cat命令直接完成.
 
@@ -164,7 +164,7 @@ execSync(`cat ${sourceFiles} > ${videoDir}/${name}.ts`)
 console.log('merge ts files done.')
 ```
 
-### 将ts文件转成MP4格式的视频文件
+#### 将ts文件转成MP4格式的视频文件
 
 将ts文件转换成mp4的工作可以使用`mpegts_to_mp4`依赖包完成
 
@@ -181,11 +181,11 @@ mpegts_to_mp4(tsFileName, 'test.mp4', async (err) => {
 })
 ```
 
-## html5和Nodejs使用视频流在线播放
+### html5和Nodejs使用视频流在线播放
 
-### 基本知识
+#### 基本知识
 
-#### HTTP status 206(Partial Content)
+##### HTTP status 206(Partial Content)
 
 在传输大容量数据时,通过将数据分分割成多块,让浏览器逐步显示.需要在响应头设置相关信息:
 
@@ -210,7 +210,7 @@ Range: bytes=5001-10000
 Range: bytes=5001-
 ```
 
-### 后台实现
+#### 后台实现
 
 ```typescript
   app.get('/video', (req, res) => {
@@ -252,7 +252,7 @@ Range: bytes=5001-
 
 
 
-### 前端的简单实现
+#### 前端的简单实现
 
 ```html
 <video id="videoPlayer" controls>
@@ -264,9 +264,9 @@ Range: bytes=5001-
 
 
 
-# 其他
+## 其他
 
-## html自动加载视频
+### html自动加载视频
 
 ```html
 <video id="videoPlayer" controls>
@@ -281,9 +281,9 @@ myVideo.load()
 myVideo.play()
 ```
 
-## axios下载视频
+### axios下载视频
 
-### 后台实现
+#### 后台实现
 
 ```typescript
 app.get('/download', async (req, res) => {
