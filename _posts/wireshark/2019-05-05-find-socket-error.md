@@ -21,7 +21,7 @@ categories: [wireshark, socket]
 
 找了好久的原因也没找到(缺少错误信息提示), 于是就想着使用`wireshark`抓包分析一下, 没想到一抓包就找到了问题.
 
-![超时重传](images/retransmission.png)
+![超时重传](http://blog.linyimin.club/images/posts/wireshark/2019-05-05-find-socket-error/retransmission.png)
 
 根据抓包信息,可以发现客户端发出的`SYN`数据段一直在超时重传.也就是服务器端一直收不到客户端的连接请求.再看`Destination`列发现, 客户端指定的服务IP居然是`1.0.0.127`, 很明显是客户端在网络地址初始化时出现了错误.查看客户端网络地址初始化的代码(如下):
 
@@ -71,27 +71,27 @@ htons中:
 
 **第一次重传**
 
-![](images/RTO1.png)
+![](http://blog.linyimin.club/images/posts/wireshark/2019-05-05-find-socket-error/RTO1.png)
 
 **第二次重传**
 
-![](images/RTO2.png)
+![](http://blog.linyimin.club/images/posts/wireshark/2019-05-05-find-socket-error/RTO2.png)
 
 **第三次重传**
 
-![](images/RTO3.png)
+![](http://blog.linyimin.club/images/posts/wireshark/2019-05-05-find-socket-error/RTO3.png)
 
 **第四次重传**
 
-![](images/RTO4.png)
+![](http://blog.linyimin.club/images/posts/wireshark/2019-05-05-find-socket-error/RTO4.png)
 
 **第五次重传**
 
-![](images/RTO5.png)
+![](http://blog.linyimin.club/images/posts/wireshark/2019-05-05-find-socket-error/RTO5.png)
 
 **第六次重传**
 
-![](images/RTO6.png)
+![](http://blog.linyimin.club/images/posts/wireshark/2019-05-05-find-socket-error/RTO6.png)
 
 <font color="#dd0000">1.01 --> 3.02 --> 7.06 --> 15.25 --> 31.38 --> 64.91</font>超时重传时间基本上以2倍的速度在增长,一共重传6次之后,如果还没有收到确认,则直接断开,不再重传. 
 
