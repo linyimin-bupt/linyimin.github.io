@@ -176,7 +176,7 @@ $ pidstat -wt -p 5785
 
 ```shell
 # 以10个线程运行5分钟的基准测试，模拟多线程切换问题
-$ sysbench --threads=10 --max-time=300 --max-requests=10000000 --test=threads run
+$ sysbench --num-threads=10 --max-time=300 --max-requests=10000000 --test=threads run
 ```
 
 首先，先查看空闲状态下，系统的上下文切换情况
@@ -192,7 +192,7 @@ $ vmstat 5 3
 然后使用`sysbench`模拟多线程切换情景
 
 ```shell
-$ sysbench --threads=10 --max-time=300 --max-requests=10000000 --test=threads run
+$ sysbench --num-threads=10 --max-time=300 --max-requests=10000000 --test=threads run
 ```
 
 ![系统的上下文切换](http://blog.linyimin.club/images/posts/linux-analysis/sysbench-vmstat-cs.png)
