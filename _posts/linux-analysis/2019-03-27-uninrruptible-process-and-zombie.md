@@ -128,6 +128,209 @@ $ ps -aux | grep 7433
 
 <font color="#dd0000">直接读写磁盘, 对IO敏感型应用(数据库系统)很友好,因为可以在应用中直接控制磁盘的读写.但是在大部分的情况下,最好还是通过系统缓存来优化磁盘IO</font>
 
+#### iowait补充
+
+`iowait`表示等待“IO”的时间.不可中断并不是指CPU不响应外部硬件的中断，而是指进程不响应异步信号。`iowait`表示CPU在等待IO完成，此时CPU是可以切换到其他就绪任务执行的。所以准确的来讲，`iowait`表示<font color="#dd0000">CPU空闲并且系统有IO请求未完成的时间</font>
+
+所以说：<font color="#dd0000">iowait升高时不一定表示系统存在IO瓶颈，同种IO条件下，如果系还存在其他的CPU密集型任务，iowait会明显下降。大部分情况下，还需要检查IO量、等待队列等更加明确的指标</font>
+
+<font color="#dd0000">idle和iowait都说明CPU很空闲，iowait还指明系统还存在未完成的IO请求</font>
+
+#### 例子
+
+1. 运行下面的程序，构造大量的读磁盘请求
+
+```c
+#define _GNU_SOURCE
+#define BUF_SIZE 64 * 1024 * 1024
+#define BUF_COUNT 20
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+#include <unistd.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/wait.h>
+#include <dirent.h>
+#include <string.h>
+#include <sys/file.h>
+#include <fcntl.h>
+#include <ctype.h>
+
+char *select_disk()
+{
+	DIR *dirptr = opendir("/dev/");
+	if (dirptr == NULL)
+	{
+		perror("Failed to open dir");
+		return NULL;
+	}
+
+	struct dirent *entry;
+	char *result = (char *)calloc(512, sizeof(char));
+	const char *sd_prefix = "sd";
+	const char *xvd_prefix = "xvd";
+	while (entry = readdir(dirptr))
+	{
+		if (strncmp(sd_prefix, entry->d_name, 2) == 0 || strncmp(xvd_prefix, entry->d_name, 3) == 0)
+		{
+			snprintf(result, 512 * sizeof(char), "/dev/%s", entry->d_name);
+			return result;
+		}
+	}
+
+	free(result);
+	return NULL;
+}
+
+long int get_value(char *str)
+{
+	char *endptr = NULL;
+	long int value = strtol(str, &endptr, 10);
+	if ((errno == ERANGE && (value == LONG_MAX || value == LONG_MIN)) || (errno != 0 && value == 0))
+	{
+		perror("strtol");
+		return -1;
+	}
+
+	if (endptr == str)
+	{
+		perror("not number");
+		return -1;
+	}
+
+	if (value <= 0)
+	{
+		perror("not positive number");
+		return -1;
+	}
+
+	return value;
+}
+
+void sub_process(const char *disk, size_t buffer_size, size_t count)
+{
+	int fd = open(disk, O_RDONLY | O_DIRECT | O_LARGEFILE, 0755);
+	if (fd < 0)
+	{
+		perror("failed to open disk");
+		_exit(1);
+	}
+
+	unsigned char *buf;
+	posix_memalign((void **)&buf, 512, buffer_size);
+	size_t read_bytes = 0;
+	while (read_bytes < count * buffer_size)
+	{
+		size_t ret = read(fd, buf, buffer_size);
+		if (ret < 0)
+		{
+			perror("failed to read contents");
+			close(fd);
+			free(buf);
+			_exit(1);
+		}
+		read_bytes += ret;
+	}
+
+	close(fd);
+	free(buf);
+	_exit(0);
+}
+
+int main(int argc, char **argv)
+{
+	int status = 0;
+	int c = 0;
+	char *disk = NULL;
+	char *size = NULL;
+	char *count = NULL;
+
+	while ((c = getopt(argc, argv, "d:s:c:")) != -1)
+	{
+		switch (c)
+		{
+		case 'd':
+			disk = optarg;
+			break;
+		case 's':
+			size = optarg;
+			break;
+		case 'c':
+			count = optarg;
+			break;
+		case '?':
+			printf("Illegal option: -%c\n", isprint(optopt) ? optopt : '#');
+			_exit(1);
+		default:
+			_exit(1);
+		}
+	}
+
+	if (disk == NULL)
+	{
+		disk = select_disk();
+	}
+	if (disk == NULL)
+	{
+		_exit(1);
+	}
+
+	long int buffer_size = BUF_SIZE;
+	long int buffer_count = BUF_COUNT;
+	if (size != NULL)
+	{
+		buffer_size = get_value(size);
+		if (buffer_size < 0)
+		{
+			exit(1);
+		}
+	}
+	if (count != NULL)
+	{
+		buffer_count = get_value(count);
+		if (buffer_count < 0)
+		{
+			exit(1);
+		}
+	}
+
+	printf("Reading data from disk %s with buffer size %ld and count %ld\n", disk, buffer_size, buffer_count);
+
+	int i = 0;
+	for (;;)
+	{
+		for (i = 0; i < 2; i++)
+		{
+			if (fork() == 0)
+			{
+				sub_process(disk, buffer_size, buffer_count);
+			}
+		}
+		sleep(5);
+	}
+
+	while (wait(&status) > 0);
+	return 0;
+}
+```
+
+![](../../images/posts/linux-analysis/2019-03-27-uninrruptible-process-and-zombie/iowait.png)
+
+可以发现现在iowait很高，然后使用`stress`命令模拟多个CPU密集型的进程。
+
+2. 构造CPU密集型进程
+
+```shell
+$ stress -c 8 -t 6000
+```
+
+![](../../images/posts/linux-analysis/2019-03-27-uninrruptible-process-and-zombie/iowait-us.png)
+
+可以发现，系统存在其他CPU密集型任务时，`iowait`明显降低了。
+
 ### 僵尸进程
 
 僵尸进程是因为父进程没有回收子进程资源而出现的,所以解决方法很直接:<font color="#dd0000">找出子进程的父进程,然后在父进程中解决.</font>
