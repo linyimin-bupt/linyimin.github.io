@@ -122,4 +122,5 @@ exec 1000<&-
 ### 参考链接
 
 [shell中的多进程【并发】](https://blog.51cto.com/fuwenchao/1564573)
+
 [linux shell命名管道FIFO（多进程动态并发）](https://blog.csdn.net/qq_32642039/article/details/78624210)
