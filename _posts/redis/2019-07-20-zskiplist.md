@@ -278,3 +278,29 @@ zskiplistNode* zslGetElementByRank(zskiplist *zsl, unsigned long rank) {
 
 
 ### `zslInRange`: 给定一个分值范围, 如果跳表至少存在一个节点的分值在这个范围则返回1, 否则返回0
+
+```c
+int zslIsInRange(zskiplist *zsl, zrangespec *range) {
+    zskiplistNode *x;
+
+    // 如果分值范围为空, 直接返回0 
+    if (range->min > range->max ||
+            (range->min == range->max && (range->minex || range->maxex)))
+        return 0;
+    x = zsl->tail;
+    // 如果跳表的最大值小于分值范围的下界, 说明不存在节点的分支处于此范围
+    if (x == NULL || !zslValueGteMin(x->score,range))
+        return 0;
+    x = zsl->header->level[0].forward;
+    // 如果跳表的最最小值大于分值范围的上界, 说明不存在节点的分支处于此范围
+    if (x == NULL || !zslValueLteMax(x->score,range))
+        return 0;
+    // 否则存在节点的分支处于此范围内
+    return 1;
+}
+```
+
+
+## 参考链接
+
+[Redis 数据结构 skiplist](http://wiki.jikexueyuan.com/project/redis/skiplist.html)
